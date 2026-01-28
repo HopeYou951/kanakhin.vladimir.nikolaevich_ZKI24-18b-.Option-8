@@ -6,11 +6,12 @@
  */
 
 "use strict";
-$(function() {
+$(function () {
     var copy = $("#page-search-copy");
     var expand = $("#page-search-expand");
     var searchLink = $("span#page-search-link");
     var redirect = $("input#search-redirect");
+
     function setSearchUrlTemplate() {
         var href = document.location.href.split(/[#?]/)[0];
         href += "?q=" + "%s";
@@ -20,26 +21,29 @@ $(function() {
         searchLink.html(href);
         copy[0].onmouseenter();
     }
+
     function copyLink(e) {
         copyToClipboard(this.previousSibling.innerText);
         switchCopyLabel(this, this.lastElementChild);
     }
+
     copy.on("click", copyLink);
-    copy[0].onmouseenter = function() {};
+    copy[0].onmouseenter = function () {
+    };
     redirect.on("click", setSearchUrlTemplate);
     setSearchUrlTemplate();
     copy.prop("disabled", false);
     redirect.prop("disabled", false);
     expand.on("click", function (e) {
         var searchInfo = $("div.page-search-info");
-        if(this.parentElement.hasAttribute("open")) {
+        if (this.parentElement.hasAttribute("open")) {
             searchInfo.attr("style", " display:none;");
         } else {
             searchInfo.attr("style", "display:block;");
         }
     });
 });
-$(window).on("load", function() {
+$(window).on("load", function () {
     var input = $("#page-search-input");
     var reset = $("#page-search-reset");
     var modules = $("#search-modules");
@@ -53,6 +57,7 @@ $(window).on("load", function() {
     var visibleTabs = [];
     var feelingLucky = false;
     const MIN_TABBED_RESULTS = 10;
+
     function renderResults(result) {
         if (!result.length) {
             notify.html(messages.noResult);
@@ -90,7 +95,7 @@ $(window).on("load", function() {
                 activeTab = "types";
             }
         }
-        var categoryCount = Object.keys(r).reduce(function(prev, curr) {
+        var categoryCount = Object.keys(r).reduce(function (prev, curr) {
             return prev + (r[curr].length > 0 ? 1 : 0);
         }, 0);
         visibleTabs = [];
@@ -109,7 +114,7 @@ $(window).on("load", function() {
                             .append($("<span/>")
                                 .attr("style", "font-weight:normal;")
                                 .html(" (" + count + ")")))
-                        .on("click", null, key, function(e) {
+                        .on("click", null, key, function (e) {
                             fixedTab = true;
                             renderResult(e.data, $(this));
                         }).appendTo(tabContainer);
@@ -127,6 +132,7 @@ $(window).on("load", function() {
             renderTable(activeTab, r[activeTab]).appendTo(resultContainer);
         }
         resultSection.show();
+
         function renderResult(category, button) {
             activeTab = category;
             setSearchUrl();
@@ -136,9 +142,11 @@ $(window).on("load", function() {
             button.addClass("active-table-tab").attr("tabIndex", "0");
         }
     }
+
     function selectTab(category) {
         $("button#result-tab-" + category).focus().trigger("click");
     }
+
     function renderTable(category, items) {
         var table = $("<div class='result-table'>");
         var col1, col2;
@@ -158,26 +166,29 @@ $(window).on("load", function() {
             .append($("<span class='table-header'/>").html(col1))
             .append($("<span class='table-header'/>").html(col2))
             .appendTo(table);
-        $.each(items, function(index, item) {
+        $.each(items, function (index, item) {
             renderItem(item, table);
         });
         return table;
     }
+
     function select() {
         if (!this.classList.contains("selected")) {
             setSelected(this);
         }
     }
+
     function unselect() {
         if (this.classList.contains("selected")) {
             setSelected(null);
         }
     }
+
     function renderItem(item, table) {
         var label = getResultLabel(item);
         var desc = getResultDescription(item);
         var link = $("<a/>")
-            .attr("href",  getURL(item.indexItem, item.category))
+            .attr("href", getURL(item.indexItem, item.category))
             .attr("tabindex", "0")
             .addClass("search-result-link");
         link.on("mousemove", select.bind(link[0]))
@@ -188,7 +199,9 @@ $(window).on("load", function() {
             .append($("<span/>").addClass("search-result-desc").html(desc))
             .appendTo(table);
     }
+
     var timeout;
+
     function schedulePageSearch() {
         if (timeout) {
             clearTimeout(timeout);
@@ -197,6 +210,7 @@ $(window).on("load", function() {
             doPageSearch()
         }, 100);
     }
+
     function doPageSearch() {
         setSearchUrl();
         var term = searchTerm = input.val().trim();
@@ -209,9 +223,10 @@ $(window).on("load", function() {
         } else {
             notify.html(messages.searching);
             var module = modules.val();
-            doSearch({ term: term, maxResults: 1200, module: module}, renderResults);
+            doSearch({term: term, maxResults: 1200, module: module}, renderResults);
         }
     }
+
     function setSearchUrl() {
         var query = input.val().trim();
         var url = document.location.pathname;
@@ -226,11 +241,13 @@ $(window).on("load", function() {
         }
         history.replaceState({query: query}, "", url);
     }
-    input.on("input", function(e) {
+
+    input.on("input", function (e) {
         feelingLucky = false;
         reset.css("visibility", input.val() ? "visible" : "hidden");
         schedulePageSearch();
     });
+
     function setSelected(link) {
         if (selectedLink) {
             selectedLink.classList.remove("selected");
@@ -242,6 +259,7 @@ $(window).on("load", function() {
         }
         selectedLink = link;
     }
+
     document.addEventListener("keydown", e => {
         if (e.ctrlKey || e.altKey || e.metaKey) {
             return;
@@ -294,7 +312,7 @@ $(window).on("load", function() {
             input.focus();
         }
     });
-    reset.on("click", function() {
+    reset.on("click", function () {
         notify.html(messages.enterTerm);
         resultSection.hide();
         activeTab = "";
@@ -303,14 +321,15 @@ $(window).on("load", function() {
         input.val('').focus();
         setSearchUrl();
     });
-    modules.on("change", function() {
+    modules.on("change", function () {
         if (input.val()) {
             doPageSearch();
         }
         input.focus();
         try {
             localStorage.setItem("search-modules", modules.val());
-        } catch (unsupported) {}
+        } catch (unsupported) {
+        }
     });
 
     input.prop("disabled", false);
@@ -326,7 +345,8 @@ $(window).on("load", function() {
             if (searchModules) {
                 modules.val(searchModules);
             }
-        } catch (unsupported) {}
+        } catch (unsupported) {
+        }
     }
     if (urlParams.has("q")) {
         input.val(urlParams.get("q"));

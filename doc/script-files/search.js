@@ -34,10 +34,10 @@ const itemDesc = [
     ["Record component of {0}"],
     // Types in upper and lower case
     ["Annotation Interface", "annotation interface"],
-    ["Enum Class",           "enum class"],
-    ["Interface",      "interface"],
-    ["Record Class",    "record class"],
-    ["Class",          "class"],
+    ["Enum Class", "enum class"],
+    ["Interface", "interface"],
+    ["Record Class", "record class"],
+    ["Class", "class"],
     ["Exception Class", "exception class"],
     // Tags
     ["Search tag in {0}"],
@@ -62,12 +62,15 @@ const MAX_RESULTS = 300;
 const UNICODE_LETTER = 0;
 const UNICODE_DIGIT = 1;
 const UNICODE_OTHER = 2;
+
 function checkUnnamed(name, separator) {
     return name === "<Unnamed>" || !name ? "" : name + separator;
 }
+
 function escapeHtml(str) {
     return str.replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
+
 function getHighlightedText(str, boundaries, from, to) {
     var start = from;
     var text = "";
@@ -86,6 +89,7 @@ function getHighlightedText(str, boundaries, from, to) {
     text += escapeHtml(str.slice(start, to));
     return text;
 }
+
 function getURLPrefix(item, category) {
     var urlPrefix = "";
     var slash = "/";
@@ -97,7 +101,7 @@ function getURLPrefix(item, category) {
         if (item.m) {
             urlPrefix = item.m + slash;
         } else {
-            $.each(packageSearchIndex, function(index, it) {
+            $.each(packageSearchIndex, function (index, it) {
                 if (it.m && item.p === it.l) {
                     urlPrefix = it.m + slash;
                     item.m = it.m;
@@ -108,6 +112,7 @@ function getURLPrefix(item, category) {
     }
     return urlPrefix;
 }
+
 function getURL(item, category) {
     if (item.url) {
         return item.url;
@@ -140,13 +145,14 @@ function getURL(item, category) {
     item.url = url;
     return url;
 }
+
 function createMatcher(term, camelCase) {
     if (camelCase && !isUpperCase(term)) {
         return null;  // no need for camel-case matcher for lower case query
     }
     var pattern = "";
     var upperCase = [];
-    term.trim().split(/\s+/).forEach(function(w, index, array) {
+    term.trim().split(/\s+/).forEach(function (w, index, array) {
         var tokens = w.split(/(?=[\p{Lu},.()<>?[\/])/u);
         for (var i = 0; i < tokens.length; i++) {
             var s = tokens[i];
@@ -171,10 +177,12 @@ function createMatcher(term, camelCase) {
     re.upperCase = upperCase;
     return re;
 }
+
 // Unicode regular expressions do not allow certain characters to be escaped
 function escapeUnicodeRegex(pattern) {
     return pattern.replace(/[\[\]{}()*+?.\\^$|\s]/g, '\\$&');
 }
+
 function findMatch(matcher, input, startOfName, endOfName, prefixLength) {
     var from = startOfName;
     matcher.lastIndex = from;
@@ -254,18 +262,23 @@ function findMatch(matcher, input, startOfName, endOfName, prefixLength) {
         boundaries: boundaries
     } : NO_MATCH;
 }
+
 function isLetter(s) {
     return /\p{L}/u.test(s);
 }
+
 function isUpperCase(s) {
     return /\p{Lu}/u.test(s);
 }
+
 function isLowerCase(s) {
     return /\p{Ll}/u.test(s);
 }
+
 function isDigit(s) {
     return /\p{Nd}/u.test(s);
 }
+
 function getCharType(s) {
     if (isLetter(s)) {
         return UNICODE_LETTER;
@@ -275,12 +288,14 @@ function getCharType(s) {
         return UNICODE_OTHER;
     }
 }
+
 function rateDistance(str) {
     // Rate distance of string by counting word boundaries and camel-case tokens
     return !str ? 0
         : (str.split(/\b|(?<=[\p{Ll}_])\p{Lu}/u).length * 0.1
             + (isUpperCase(str[0]) ? 0.08 : 0));
 }
+
 function doSearch(request, response) {
     var term = request.term.trim();
     var maxResults = request.maxResults || MAX_RESULTS;
@@ -302,17 +317,19 @@ function doSearch(request, response) {
                 return "";
         }
     }
+
     function getClassPrefix(item, category) {
         if (category === "members" && (!item.k || (item.k < 8 && item.k !== "3"))) {
             return item.c + ".";
         }
         return "";
     }
+
     function searchIndex(indexArray, category) {
         var matches = [];
         if (!indexArray) {
             if (!indexLoaded) {
-                matches.push({ l: messages.loading, category: category });
+                matches.push({l: messages.loading, category: category});
             }
             return matches;
         }
@@ -344,7 +361,7 @@ function doSearch(request, response) {
                 if (m.boundaries[0] < prefix.length) {
                     m.name = qualName;
                 } else {
-                    m.boundaries = m.boundaries.map(function(b) {
+                    m.boundaries = m.boundaries.map(function (b) {
                         return b - prefix.length;
                     });
                 }
@@ -353,7 +370,7 @@ function doSearch(request, response) {
             }
             return true;
         });
-        return matches.sort(function(e1, e2) {
+        return matches.sort(function (e1, e2) {
             return e2.score - e1.score
                 || (category !== "members"
                     ? e1.name.localeCompare(e2.name) : 0);
@@ -361,49 +378,51 @@ function doSearch(request, response) {
     }
 
     var result = searchIndex(moduleSearchIndex, "modules")
-         .concat(searchIndex(packageSearchIndex, "packages"))
-         .concat(searchIndex(typeSearchIndex, "types"))
-         .concat(searchIndex(memberSearchIndex, "members"))
-         .concat(searchIndex(tagSearchIndex, "searchTags"));
+        .concat(searchIndex(packageSearchIndex, "packages"))
+        .concat(searchIndex(typeSearchIndex, "types"))
+        .concat(searchIndex(memberSearchIndex, "members"))
+        .concat(searchIndex(tagSearchIndex, "searchTags"));
 
     if (!indexLoaded) {
-        updateSearchResults = function() {
+        updateSearchResults = function () {
             doSearch(request, response);
         }
     } else {
-        updateSearchResults = function() {};
+        updateSearchResults = function () {
+        };
     }
     response(result);
 }
+
 // JQuery search menu implementation
 $.widget("custom.catcomplete", $.ui.autocomplete, {
-    _create: function() {
+    _create: function () {
         this._super();
         this.widget().menu("option", "items", "> .result-item");
         // workaround for search result scrolling
-        this.menu._scrollIntoView = function _scrollIntoView( item ) {
+        this.menu._scrollIntoView = function _scrollIntoView(item) {
             var borderTop, paddingTop, offset, scroll, elementHeight, itemHeight;
-            if ( this._hasScroll() ) {
-                borderTop = parseFloat( $.css( this.activeMenu[ 0 ], "borderTopWidth" ) ) || 0;
-                paddingTop = parseFloat( $.css( this.activeMenu[ 0 ], "paddingTop" ) ) || 0;
+            if (this._hasScroll()) {
+                borderTop = parseFloat($.css(this.activeMenu[0], "borderTopWidth")) || 0;
+                paddingTop = parseFloat($.css(this.activeMenu[0], "paddingTop")) || 0;
                 offset = item.offset().top - this.activeMenu.offset().top - borderTop - paddingTop;
                 scroll = this.activeMenu.scrollTop();
                 elementHeight = this.activeMenu.height() - 26;
                 itemHeight = item.outerHeight();
 
-                if ( offset < 0 ) {
-                    this.activeMenu.scrollTop( scroll + offset );
-                } else if ( offset + itemHeight > elementHeight ) {
-                    this.activeMenu.scrollTop( scroll + offset - elementHeight + itemHeight );
+                if (offset < 0) {
+                    this.activeMenu.scrollTop(scroll + offset);
+                } else if (offset + itemHeight > elementHeight) {
+                    this.activeMenu.scrollTop(scroll + offset - elementHeight + itemHeight);
                 }
             }
         };
     },
-    _renderMenu: function(ul, items) {
+    _renderMenu: function (ul, items) {
         var currentCategory = "";
         var widget = this;
         widget.menu.bindings = $();
-        $.each(items, function(index, item) {
+        $.each(items, function (index, item) {
             if (item.category && item.category !== currentCategory) {
                 ul.append("<li class='ui-autocomplete-category'>" + categories[item.category] + "</li>");
                 currentCategory = item.category;
@@ -419,7 +438,7 @@ $.widget("custom.catcomplete", $.ui.autocomplete, {
         ul.append("<li class='ui-static-link'><div><a href='" + pathtoroot + "search.html?q="
             + encodeURI(widget.term) + "'>" + linkLabel + "</a></div></li>");
     },
-    _renderItem: function(ul, item) {
+    _renderItem: function (ul, item) {
         var label = getResultLabel(item);
         var resultDesc = getResultDescription(item);
         return $("<li/>")
@@ -437,18 +456,20 @@ $.widget("custom.catcomplete", $.ui.autocomplete, {
                 missing = Math.max(missing, label.scrollWidth - label.clientWidth);
             }
         });
-        ul.outerWidth( Math.max(
+        ul.outerWidth(Math.max(
             ul.width("").outerWidth() + missing + 40,
             this.element.outerWidth()
         ));
     }
 });
+
 function getResultLabel(item) {
     if (item.l) {
         return item.l;
     }
     return getHighlightedText(item.name, item.boundaries, 0, item.name.length);
 }
+
 function getResultDescription(item) {
     if (!item.indexItem) {
         return "";
@@ -487,12 +508,14 @@ function getResultDescription(item) {
     }
     return "";
 }
+
 function getEnclosingDescription(elem, desc, label) {
     return inDesc.replace("{0}", elem).replace("{1}", desc + " " + label);
 }
+
 function getEnclosingTypeDesc(item) {
     if (!item.typeDesc) {
-        $.each(typeSearchIndex, function(index, it) {
+        $.each(typeSearchIndex, function (index, it) {
             if (it.l === item.c && it.p === item.p && it.m === item.m) {
                 item.typeDesc = itemDesc[it.k || 12][1];
                 return false;
@@ -501,36 +524,37 @@ function getEnclosingTypeDesc(item) {
     }
     return item.typeDesc || "";
 }
-$(function() {
+
+$(function () {
     var search = $("#search-input");
     var reset = $("#reset-search");
     search.catcomplete({
         minLength: 1,
         delay: 200,
-        source: function(request, response) {
+        source: function (request, response) {
             if (request.term.trim() === "") {
                 return this.close();
             }
             // Prevent selection of item at current mouse position
             this.menu.previousFilter = "_";
-            this.menu.filterTimer = this.menu._delay(function() {
+            this.menu.filterTimer = this.menu._delay(function () {
                 delete this.previousFilter;
             }, 1000);
             return doSearch(request, response);
         },
-        response: function(event, ui) {
+        response: function (event, ui) {
             if (!ui.content.length) {
-                ui.content.push({ l: messages.noResult });
+                ui.content.push({l: messages.noResult});
             }
         },
         autoFocus: true,
-        focus: function(event, ui) {
+        focus: function (event, ui) {
             return false;
         },
         position: {
             collision: "flip"
         },
-        select: function(event, ui) {
+        select: function (event, ui) {
             if (ui.item.indexItem) {
                 var url = getURL(ui.item.indexItem, ui.item.category);
                 window.location.href = pathtoroot + url;
@@ -543,7 +567,7 @@ $(function() {
     search.prop("disabled", false);
     search.attr("autocapitalize", "off");
     reset.prop("disabled", false);
-    reset.click(function() {
+    reset.click(function () {
         search.val('').focus();
     });
 });

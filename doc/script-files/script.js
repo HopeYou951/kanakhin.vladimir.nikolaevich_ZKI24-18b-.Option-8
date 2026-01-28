@@ -49,7 +49,7 @@ function createElem(doc, tag, path) {
 // Helper for  making content containing release names comparable lexicographically
 function makeComparable(s) {
     return s.toLowerCase().replace(/(\d+)/g,
-        function(n, m) {
+        function (n, m) {
             return ("000" + m).slice(-4);
         });
 }
@@ -70,7 +70,7 @@ function sortTable(header, columnIndex, columns) {
     var container = header.parentElement;
     var descending = header.classList.contains(sortAsc);
     container.querySelectorAll("div.table-header").forEach(
-        function(header) {
+        function (header) {
             header.classList.remove(sortAsc);
             header.classList.remove(sortDesc);
         }
@@ -80,7 +80,7 @@ function sortTable(header, columnIndex, columns) {
     for (var i = columns; i < cells.length; i += columns) {
         rows.push(Array.prototype.slice.call(cells, i, i + columns));
     }
-    var comparator = function(a, b) {
+    var comparator = function (a, b) {
         var ka = makeComparable(a[columnIndex].textContent);
         var kb = makeComparable(b[columnIndex].textContent);
         if (ka < kb)
@@ -91,11 +91,11 @@ function sortTable(header, columnIndex, columns) {
     };
     var sorted = rows.sort(comparator);
     var visible = 0;
-    sorted.forEach(function(row) {
+    sorted.forEach(function (row) {
         if (row[0].style.display !== 'none') {
             var isEvenRow = visible++ % 2 === 0;
         }
-        row.forEach(function(cell) {
+        row.forEach(function (cell) {
             toggleStyle(cell.classList, isEvenRow, evenRowColor, oddRowColor);
             container.appendChild(cell);
         })
@@ -118,7 +118,7 @@ function toggleGlobal(checkbox, selected, columns) {
         const selectedClass = id + "-tab" + (selectOther ? "" : selected);
         var visible = 0;
         t.parentElement.querySelectorAll('div.' + id)
-            .forEach(function(elem) {
+            .forEach(function (elem) {
                 if (selectAll
                     || (!selectOther && elem.classList.contains(selectedClass))
                     || (selectOther && elem.className.indexOf(selectedClass) < 0)) {
@@ -139,12 +139,12 @@ function toggleGlobal(checkbox, selected, columns) {
 function show(tableId, selected, columns) {
     if (tableId !== selected) {
         document.querySelectorAll('div.' + tableId + ':not(.' + selected + ')')
-            .forEach(function(elem) {
+            .forEach(function (elem) {
                 elem.style.display = 'none';
             });
     }
     document.querySelectorAll('div.' + selected)
-        .forEach(function(elem, index) {
+        .forEach(function (elem, index) {
             elem.style.display = '';
             var isEvenRow = index % (columns * 2) < columns;
             toggleStyle(elem.classList, isEvenRow, evenRowColor, oddRowColor);
@@ -156,15 +156,15 @@ function updateTabs(tableId, selected) {
     document.getElementById(tableId + '.tabpanel')
         .setAttribute('aria-labelledby', selected);
     document.querySelectorAll('button[id^="' + tableId + '"]')
-        .forEach(function(tab, index) {
+        .forEach(function (tab, index) {
             if (selected === tab.id || (tableId === selected && index === 0)) {
                 tab.className = activeTableTab;
                 tab.setAttribute('aria-selected', true);
-                tab.setAttribute('tabindex',0);
+                tab.setAttribute('tabindex', 0);
             } else {
                 tab.className = tableTab;
                 tab.setAttribute('aria-selected', false);
-                tab.setAttribute('tabindex',-1);
+                tab.setAttribute('tabindex', -1);
             }
         });
 }
@@ -186,7 +186,8 @@ function switchTab(e) {
     }
 }
 
-var updateSearchResults = function() {};
+var updateSearchResults = function () {
+};
 
 function indexFilesLoaded() {
     return moduleSearchIndex
@@ -195,11 +196,13 @@ function indexFilesLoaded() {
         && memberSearchIndex
         && tagSearchIndex;
 }
+
 // Copy the contents of the local snippet to the clipboard
 function copySnippet(button) {
     copyToClipboard(button.nextElementSibling.innerText);
     switchCopyLabel(button, button.firstElementChild);
 }
+
 function copyToClipboard(content) {
     var textarea = document.createElement("textarea");
     textarea.style.height = 0;
@@ -209,6 +212,7 @@ function copyToClipboard(content) {
     document.execCommand("copy");
     document.body.removeChild(textarea);
 }
+
 function resetInput(input, event, blur) {
     if (input.value) {
         input.value = "";
@@ -218,23 +222,26 @@ function resetInput(input, event, blur) {
     }
     event.preventDefault();
 }
+
 function isInput(elem) {
     return elem instanceof HTMLInputElement && elem.type === "text";
 }
+
 function switchCopyLabel(button, span) {
     var copied = span.getAttribute("data-copied");
     button.classList.add("visible");
     var initialLabel = span.innerHTML;
     span.innerHTML = copied;
-    setTimeout(function() {
+    setTimeout(function () {
         button.classList.remove("visible");
-        setTimeout(function() {
+        setTimeout(function () {
             if (initialLabel !== copied) {
                 span.innerHTML = initialLabel;
             }
         }, 100);
     }, 1900);
 }
+
 function makeFilterWidget(sidebar, updateToc) {
     if (!sidebar) {
         return null;
@@ -260,7 +267,7 @@ function makeFilterWidget(sidebar, updateToc) {
         filterInput.removeAttribute("disabled");
         filterInput.setAttribute("autocapitalize", "off");
         filterInput.value = "";
-        filterInput.addEventListener("input", function(e) {
+        filterInput.addEventListener("input", function (e) {
             resetInput.style.visibility = filterInput.value ? "visible" : "hidden";
             const pattern = filterInput.value ? filterInput.value.trim()
                 .replace(/[\[\]{}()*+?.\\^$|]/g, '\\$&')
@@ -271,7 +278,7 @@ function makeFilterWidget(sidebar, updateToc) {
                     // li.removeAttribute("style");
                     const selfMatch = filter.test(li.firstElementChild.innerText);
                     li.style.display = "block";
-                    li.firstElementChild.style.opacity =  selfMatch ? "100%" : "70%";
+                    li.firstElementChild.style.opacity = selfMatch ? "100%" : "70%";
                     li.firstElementChild.tabIndex = selfMatch ? 0 : -1;
                 } else {
                     li.style.display = "none";
@@ -288,6 +295,7 @@ function makeFilterWidget(sidebar, updateToc) {
             filterInput.dispatchEvent(new InputEvent("input"));
         });
     }
+
     function handleTocFocus(event) {
         let links = Array.from(sidebar.querySelectorAll("ol > li > a"))
             .filter(link => link.offsetParent && link.tabIndex === 0);
@@ -303,11 +311,13 @@ function makeFilterWidget(sidebar, updateToc) {
         }
         event.preventDefault();
     }
+
     function isTocLink(sidebar, elem) {
         let links = Array.from(sidebar.querySelectorAll("ol > li > a"))
             .filter(link => link.offsetParent && link.tabIndex === 0);
         return links.indexOf(elem) > -1;
     }
+
     return sidebar;
 }
 
@@ -317,6 +327,7 @@ function setTopMargin() {
     document.querySelector(":root")
         .style.setProperty("--nav-height", headerHeight + "px");
 }
+
 document.addEventListener("readystatechange", (e) => {
     if (document.readyState === "interactive") {
         setTopMargin();
@@ -326,16 +337,16 @@ document.addEventListener("readystatechange", (e) => {
         if (sidebar) sidebar.classList.add("hide-sidebar");
     }
 });
-document.addEventListener("DOMContentLoaded", function(e) {
+document.addEventListener("DOMContentLoaded", function (e) {
     setTopMargin();
     // Make sure current element is visible in breadcrumb navigation on small displays
     const subnav = document.querySelector("ol.sub-nav-list");
     if (subnav && subnav.lastElementChild) {
-        subnav.lastElementChild.scrollIntoView({ behavior: "instant", inline: "start", block: "nearest" });
+        subnav.lastElementChild.scrollIntoView({behavior: "instant", inline: "start", block: "nearest"});
     }
     const keymap = new Map();
     const searchInput = document.getElementById("search-input")
-                   || document.getElementById("page-search-input");
+        || document.getElementById("page-search-input");
     if (searchInput) {
         searchInput.addEventListener("focus", collapse);
         keymap.set("/", searchInput);
@@ -388,6 +399,7 @@ document.addEventListener("DOMContentLoaded", function(e) {
     var expanded = false;
     var windowWidth;
     var bodyHeight;
+
     function collapse() {
         if (expanded) {
             mainnav.removeAttribute("style");
@@ -402,6 +414,7 @@ document.addEventListener("DOMContentLoaded", function(e) {
             expanded = false;
         }
     }
+
     function expand() {
         expanded = true;
         mainnav.style.display = "block";
@@ -412,7 +425,7 @@ document.addEventListener("DOMContentLoaded", function(e) {
             tocMenu.style.display = "flex";
             expandedHeight = Math.min(maxHeight,
                 Math.max(expandedHeight, tocMenu.querySelector("div.toc-header").offsetHeight
-                                       + tocMenu.querySelector("ol.toc-list").scrollHeight + 10));
+                    + tocMenu.querySelector("ol.toc-list").scrollHeight + 10));
             tocMenu.style.height = expandedHeight + "px";
             if (menuInput) {
                 keymap.set(".", menuInput);
@@ -423,6 +436,7 @@ document.addEventListener("DOMContentLoaded", function(e) {
         toggleButton.setAttribute("aria-expanded", "true");
         windowWidth = window.innerWidth;
     }
+
     function updateToc() {
         if (expanded) {
             expand();
@@ -431,6 +445,7 @@ document.addEventListener("DOMContentLoaded", function(e) {
             handleScroll();
         }
     }
+
     function getVisibleFilterInput(show) {
         if (sidebar && sidebar.offsetParent) {
             if (show) {
@@ -444,6 +459,7 @@ document.addEventListener("DOMContentLoaded", function(e) {
             return menuInput;
         }
     }
+
     toggleButton.addEventListener("click", (e) => {
         if (expanded) {
             collapse();
@@ -464,8 +480,8 @@ document.addEventListener("DOMContentLoaded", function(e) {
                 || (hdr.querySelector("a") && hdr.querySelector("a").getAttribute("id"));
             if (id) {
                 var template = document.createElement('template');
-                template.innerHTML =" <a href='#" + encodeURI(id) + "' class='anchor-link' aria-label='" + linkToSection
-                    + "'><img src='" + pathtoroot + "resource-files/link.svg' alt='" + linkIcon +"' tabindex='0'"
+                template.innerHTML = " <a href='#" + encodeURI(id) + "' class='anchor-link' aria-label='" + linkToSection
+                    + "'><img src='" + pathtoroot + "resource-files/link.svg' alt='" + linkIcon + "' tabindex='0'"
                     + " width='16' height='16'></a>";
                 hdr.append(...template.content.childNodes);
             }
@@ -473,10 +489,11 @@ document.addEventListener("DOMContentLoaded", function(e) {
     var sections;
     var scrollTimeout;
     var prevHash;
+
     function initSectionData() {
         bodyHeight = document.body.offsetHeight;
-        sections = [{ id: "", top: 0 }].concat(Array.from(main.querySelectorAll(
-                "section[id], h2[id], h2 a[id], h3[id], h3 a[id], div[id]"))
+        sections = [{id: "", top: 0}].concat(Array.from(main.querySelectorAll(
+            "section[id], h2[id], h2 a[id], h3[id], h3 a[id], div[id]"))
             .filter((e) => {
                 return sidebar.querySelector("a[href=\"#" + encodeURI(e.getAttribute("id")) + "\"]") !== null
             }).map((e) => {
@@ -486,6 +503,7 @@ document.addEventListener("DOMContentLoaded", function(e) {
                 };
             }));
     }
+
     function setScrollTimeout() {
         if (scrollTimeout) {
             clearTimeout(scrollTimeout);
@@ -494,6 +512,7 @@ document.addEventListener("DOMContentLoaded", function(e) {
             scrollTimeout = null;
         }, 100);
     }
+
     function handleScroll() {
         if (!sidebar || !sidebar.offsetParent || sidebar.classList.contains("hide-sidebar")) {
             return;
@@ -517,6 +536,7 @@ document.addEventListener("DOMContentLoaded", function(e) {
             setSelected(currHash);
         }
     }
+
     function setSelected(hash) {
         var prev = sidebar.querySelector("a.current-selection");
         if (prev)
@@ -526,20 +546,23 @@ document.addEventListener("DOMContentLoaded", function(e) {
             var curr = sidebar.querySelector("ol.toc-list a[href=\"" + hash + "\"]");
             if (curr) {
                 curr.classList.add("current-selection");
-                curr.scrollIntoView({ behavior: "instant", block: "nearest" });
+                curr.scrollIntoView({behavior: "instant", block: "nearest"});
             }
         }
     }
+
     function hideSidebar() {
         sidebar.classList.add("hide-sidebar");
         sessionStorage.setItem("sidebar", "hidden");
     }
+
     function showSidebar() {
         sidebar.classList.remove("hide-sidebar");
         sessionStorage.removeItem("sidebar");
         initSectionData();
         handleScroll();
     }
+
     if (sidebar) {
         initSectionData();
         document.querySelectorAll("a[href^='#']").forEach((link) => {
